@@ -1,0 +1,8 @@
+[package]
+name = "poedata_db"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+poedata = { path = "../poedata" }
+serde_cbor_2 = { workspace = true }

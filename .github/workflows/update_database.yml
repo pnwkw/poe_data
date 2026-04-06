@@ -1,0 +1,27 @@
+name: Update Database
+
+env:
+  CARGO_TERM_COLOR: always
+
+on: workflow_dispatch
+
+jobs:
+  update_database:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/setup-node@v6
+    - uses: actions/checkout@v6
+    - name: Deps
+      run: npm install --global pathofexile-dat
+    - name: Build poedata_import
+      run: cargo build -p poedata_import
+    - name: Update game data
+      run: cargo run -p poedata_import -- --update
+    - uses: stefanzweifel/git-auto-commit-action@v7
+      id: auto-commit-action
+      with:
+        commit_message: Update game data
