@@ -208,7 +208,9 @@ impl PoEDatViewer {
             .unwrap()
             .patch;
         let data = self.load(&patch);
-        let file = File::create(&format!("{}/poedata.cbor", path)).unwrap();
+        let file_path = format!("{}/poedata.cbor", path);
+        let file = File::create(&file_path).unwrap();
+        println!("Writing {}", file_path);
         serde_cbor_2::to_writer(file, &data).unwrap();
     }
 }
