@@ -4,7 +4,7 @@ use poedata::{
     data::Data,
     keys::{HasKey, Key},
     structs::{
-        BaseItemType, Essence, ItemClass, ItemClassCategory, Mod, ModFamily, ModType, Stat, Tag,
+        BaseItemType, Essence, ItemClass, ItemClassCategory, ModFamily, ModType, RawMod, Stat, Tag,
     },
 };
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -142,7 +142,7 @@ impl PoEDatViewer {
                 ("ItemClasses", fields::<ItemClass>()),
                 ("ItemClassCategories", fields::<ItemClassCategory>()),
                 ("Essences", fields::<Essence>()),
-                ("Mods", fields::<Mod>()),
+                ("Mods", fields::<RawMod>()),
                 ("ModType", fields::<ModType>()),
                 ("ModFamily", fields::<ModFamily>()),
                 ("Stats", fields::<Stat>()),

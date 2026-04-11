@@ -119,8 +119,15 @@ pub struct Essence {
 impl_key!(Essence);
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ModStatEntry {
+    pub key: Option<Key<Stat>>,
+    pub min_value: i32,
+    pub max_value: i32,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct Mod {
+pub struct RawMod {
     #[serde(rename = "_index")]
     pub key: Key<Mod>,
     pub id: Id,
@@ -148,9 +155,6 @@ pub struct Mod {
     pub spawn_weight_values: Vec<u32>,
     pub tags_keys: HashSet<Key<Tag>>,
     pub granted_effects_per_level_keys: HashSet<Key<u32>>,
-    pub monster_metadata: String,
-    pub monster_kill_achievements: Vec<u32>,
-    pub chest_mod_type: Vec<Key<ModType>>,
     pub stat_5_min: i32,
     pub stat_5_max: i32,
     pub stats_key_5: Option<Key<Stat>>,
@@ -163,22 +167,124 @@ pub struct Mod {
     pub stat_6_max: i32,
     pub stats_key_6: Option<Key<Stat>>,
     pub max_level: u32,
-    pub crafting_item_class_restrictions: Vec<u32>,
-    pub monster_on_death: String,
+    pub crafting_item_class_restrictions: Vec<Key<ItemClass>>,
     #[serde(rename = "Heist_SubStatValue1")]
     pub heist_sub_stat_value_1: i32,
     #[serde(rename = "Heist_SubStatValue2")]
     pub heist_sub_stat_value_2: i32,
     #[serde(rename = "Heist_StatsKey0")]
-    pub heist_stats_key_0: Option<u32>,
+    pub heist_stats_key_0: Option<Key<Stat>>,
     #[serde(rename = "Heist_StatsKey1")]
-    pub heist_stats_key_1: Option<u32>,
+    pub heist_stats_key_1: Option<Key<Stat>>,
     #[serde(rename = "Heist_AddStatValue1")]
-    pub heist_add_stat_value_1: u32,
+    pub heist_add_stat_value_1: i32,
     #[serde(rename = "Heist_AddStatValue2")]
-    pub heist_add_stat_value_2: u32,
+    pub heist_add_stat_value_2: i32,
     pub influence_types: InfluenceType,
     pub implicit_tags_keys: HashSet<Key<Tag>>,
+    pub game_mode: i32,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(from = "RawMod")]
+pub struct Mod {
+    pub key: Key<Mod>,
+    pub id: Id,
+    pub mod_type_key: Key<ModType>,
+    pub level: u16,
+    pub domain: Domain,
+    pub name: String,
+    pub generation_type: GenerationType,
+    pub families: HashSet<Key<ModFamily>>,
+    pub mod_stats: [ModStatEntry; 6],
+    pub heist_stats: [ModStatEntry; 2],
+    pub spawn_weight_tags_keys: Vec<Key<Tag>>,
+    pub spawn_weight_values: Vec<u32>,
+    pub tags_keys: HashSet<Key<Tag>>,
+    pub granted_effects_per_level_keys: HashSet<Key<u32>>,
+    pub generation_weight_tags_keys: Vec<Key<Tag>>,
+    pub generation_weight_values: Vec<u32>,
+    pub is_essence_only_modifier: bool,
+    pub max_level: u32,
+    pub crafting_item_class_restrictions: Vec<Key<ItemClass>>,
+    pub influence_types: InfluenceType,
+    pub implicit_tags_keys: HashSet<Key<Tag>>,
+    pub game_mode: i32,
+}
+
+impl From<RawMod> for Mod {
+    fn from(rm: RawMod) -> Self {
+        let mod_stats = [
+            ModStatEntry {
+                key: rm.stats_key_1,
+                min_value: rm.stat_1_min,
+                max_value: rm.stat_1_max,
+            },
+            ModStatEntry {
+                key: rm.stats_key_2,
+                min_value: rm.stat_2_min,
+                max_value: rm.stat_2_max,
+            },
+            ModStatEntry {
+                key: rm.stats_key_3,
+                min_value: rm.stat_3_min,
+                max_value: rm.stat_3_max,
+            },
+            ModStatEntry {
+                key: rm.stats_key_4,
+                min_value: rm.stat_4_min,
+                max_value: rm.stat_4_max,
+            },
+            ModStatEntry {
+                key: rm.stats_key_5,
+                min_value: rm.stat_5_min,
+                max_value: rm.stat_5_max,
+            },
+            ModStatEntry {
+                key: rm.stats_key_6,
+                min_value: rm.stat_6_min,
+                max_value: rm.stat_6_max,
+            },
+        ];
+
+        let heist_stats = [
+            ModStatEntry {
+                key: rm.heist_stats_key_0,
+                min_value: rm.heist_sub_stat_value_1,
+                max_value: rm.heist_add_stat_value_1,
+            },
+            ModStatEntry {
+                key: rm.heist_stats_key_1,
+                min_value: rm.heist_sub_stat_value_2,
+                max_value: rm.heist_add_stat_value_2,
+            },
+        ];
+
+        Self {
+            key: rm.key,
+            id: rm.id,
+            mod_type_key: rm.mod_type_key,
+            level: rm.level,
+            domain: rm.domain,
+            name: rm.name,
+            generation_type: rm.generation_type,
+            families: rm.families,
+            mod_stats: mod_stats,
+            heist_stats: heist_stats,
+            spawn_weight_tags_keys: rm.spawn_weight_tags_keys,
+            spawn_weight_values: rm.spawn_weight_values,
+            tags_keys: rm.tags_keys,
+            granted_effects_per_level_keys: rm.granted_effects_per_level_keys,
+            generation_weight_tags_keys: rm.generation_weight_tags_keys,
+            generation_weight_values: rm.generation_weight_values,
+            is_essence_only_modifier: rm.is_essence_only_modifier,
+            max_level: rm.max_level,
+            crafting_item_class_restrictions: rm.crafting_item_class_restrictions,
+            influence_types: rm.influence_types,
+            implicit_tags_keys: rm.implicit_tags_keys,
+            game_mode: rm.game_mode,
+        }
+    }
 }
 
 impl_key!(Mod);
