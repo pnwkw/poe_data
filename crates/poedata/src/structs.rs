@@ -148,9 +148,6 @@ pub struct Mod {
     pub spawn_weight_values: Vec<u32>,
     pub tags_keys: HashSet<Key<Tag>>,
     pub granted_effects_per_level_keys: HashSet<Key<u32>>,
-    pub monster_metadata: String,
-    pub monster_kill_achievements: Vec<u32>,
-    pub chest_mod_type: Vec<Key<ModType>>,
     pub stat_5_min: i32,
     pub stat_5_max: i32,
     pub stats_key_5: Option<Key<Stat>>,
@@ -163,22 +160,22 @@ pub struct Mod {
     pub stat_6_max: i32,
     pub stats_key_6: Option<Key<Stat>>,
     pub max_level: u32,
-    pub crafting_item_class_restrictions: Vec<u32>,
-    pub monster_on_death: String,
+    pub crafting_item_class_restrictions: Vec<Key<ItemClass>>,
     #[serde(rename = "Heist_SubStatValue1")]
     pub heist_sub_stat_value_1: i32,
     #[serde(rename = "Heist_SubStatValue2")]
     pub heist_sub_stat_value_2: i32,
     #[serde(rename = "Heist_StatsKey0")]
-    pub heist_stats_key_0: Option<u32>,
+    pub heist_stats_key_0: Option<Key<Stat>>,
     #[serde(rename = "Heist_StatsKey1")]
-    pub heist_stats_key_1: Option<u32>,
+    pub heist_stats_key_1: Option<Key<Stat>>,
     #[serde(rename = "Heist_AddStatValue1")]
-    pub heist_add_stat_value_1: u32,
+    pub heist_add_stat_value_1: i32,
     #[serde(rename = "Heist_AddStatValue2")]
-    pub heist_add_stat_value_2: u32,
+    pub heist_add_stat_value_2: i32,
     pub influence_types: InfluenceType,
     pub implicit_tags_keys: HashSet<Key<Tag>>,
+    pub game_mode: i32,
 }
 
 impl_key!(Mod);
