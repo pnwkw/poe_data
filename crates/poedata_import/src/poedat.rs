@@ -4,7 +4,8 @@ use poedata::{
     data::Data,
     keys::{HasKey, Key},
     structs::{
-        BaseItemType, Essence, ItemClass, ItemClassCategory, Mod, ModFamily, ModType, Stat, Tag,
+        BaseItemType, Essence, ItemClass, ItemClassCategory, Mod, ModFamily, ModType, RawMod, Stat,
+        Tag,
     },
 };
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -73,16 +74,16 @@ fn write_to_json_pretty<T: Serialize>(path: &str, data: &T) -> anyhow::Result<()
 }
 
 #[allow(unused)]
-fn read_table_vec<T: DeserializeOwned + HasKey<K>, K>(data_dir: &str, name: &str) -> Vec<T> {
+fn read_table_vec<T: DeserializeOwned + HasKey<T>>(data_dir: &str, name: &str) -> Vec<T> {
     println!("Loading {}", name);
     read_from_json::<Vec<T>>(&format!("{}/tables/English/{}.json", data_dir, name)).unwrap()
 }
 
 #[allow(unused)]
-fn read_table_hashmap<T: DeserializeOwned + HasKey<K>, K>(
+fn read_table_hashmap<T: DeserializeOwned + HasKey<T>>(
     data_dir: &str,
     name: &str,
-) -> HashMap<Key<K>, T> {
+) -> HashMap<Key<T>, T> {
     println!("Loading {}", name);
     read_from_json::<Vec<T>>(&format!("{}/tables/English/{}.json", data_dir, name))
         .unwrap()
@@ -142,7 +143,7 @@ impl PoEDatViewer {
                 ("ItemClasses", fields::<ItemClass>()),
                 ("ItemClassCategories", fields::<ItemClassCategory>()),
                 ("Essences", fields::<Essence>()),
-                ("Mods", fields::<Mod>()),
+                ("Mods", fields::<RawMod>()),
                 ("ModType", fields::<ModType>()),
                 ("ModFamily", fields::<ModFamily>()),
                 ("Stats", fields::<Stat>()),
@@ -178,23 +179,25 @@ impl PoEDatViewer {
 
     fn load(&self, patch: &str) -> Data {
         let base_item_types = read_table_hashmap(&self.data_dir, "BaseItemTypes");
-        let essences = read_table_hashmap(&self.data_dir, "Essences");
-        let mods = read_table_vec(&self.data_dir, "Mods").as_slice().into();
-        let mod_types = read_table_hashmap(&self.data_dir, "ModType");
-        let mod_families = read_table_vec(&self.data_dir, "ModFamily")
-            .as_slice()
-            .into();
         let item_classes = read_table_hashmap(&self.data_dir, "ItemClasses");
         let item_class_categories = read_table_hashmap(&self.data_dir, "ItemClassCategories");
-        let stats: HashMap<Key<Stat>, Stat> = read_table_hashmap(&self.data_dir, "Stats");
-        let tags = read_table_vec(&self.data_dir, "Tags").as_slice().into();
+        let essences = read_table_hashmap(&self.data_dir, "Essences");
+        let mods = read_table_vec::<RawMod>(&self.data_dir, "Mods")
+            .into_iter()
+            .map(Mod::from)
+            .collect();
+        let mod_types = read_table_hashmap(&self.data_dir, "ModType");
+        let mod_families = read_table_vec(&self.data_dir, "ModFamily").into();
+
+        let stats = read_table_hashmap(&self.data_dir, "Stats");
+        let tags = read_table_vec(&self.data_dir, "Tags").into();
 
         Data {
             version: patch.to_owned(),
             base_item_types: base_item_types,
-            essences: essences,
             item_classes: item_classes,
             item_class_categories: item_class_categories,
+            essences: essences,
             mods: mods,
             mod_types: mod_types,
             mod_families: mod_families,
@@ -212,5 +215,17 @@ impl PoEDatViewer {
         let file = File::create(&file_path).unwrap();
         println!("Writing {}", file_path);
         serde_cbor_2::to_writer(file, &data).unwrap();
+    }
+
+    #[allow(unused)]
+    pub fn write_json(&self, path: &str) {
+        let patch = read_from_json::<ViewerConfig>(&format!("{}/config.json", self.data_dir))
+            .unwrap()
+            .patch;
+        let data = self.load(&patch);
+        let file_path = format!("{}/poedata.json", path);
+        let file = File::create(&file_path).unwrap();
+        println!("Writing {}", file_path);
+        serde_json::to_writer_pretty(file, &data).unwrap();
     }
 }

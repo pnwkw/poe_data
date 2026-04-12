@@ -26,10 +26,9 @@ impl<T: Clone + HasKey<T> + HasId> TwoKeyHashMap<T> {
     }
 }
 
-impl<T: Clone + HasKey<T> + HasId> From<&[T]> for TwoKeyHashMap<T> {
-    fn from(items: &[T]) -> Self {
+impl<T: Clone + HasKey<T> + HasId> From<Vec<T>> for TwoKeyHashMap<T> {
+    fn from(items: Vec<T>) -> Self {
         TwoKeyHashMap {
-            items: items.into(),
             key_map: items
                 .iter()
                 .map(|elm| (*elm.key(), elm.key().key as usize))
@@ -38,6 +37,24 @@ impl<T: Clone + HasKey<T> + HasId> From<&[T]> for TwoKeyHashMap<T> {
                 .iter()
                 .map(|elm| (elm.id().clone(), elm.key().key as usize))
                 .collect(),
+            items: items.into(),
+        }
+    }
+}
+
+impl<T: Clone + HasKey<T> + HasId> FromIterator<T> for TwoKeyHashMap<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let items: Vec<T> = iter.into_iter().collect();
+        TwoKeyHashMap {
+            key_map: items
+                .iter()
+                .map(|elm| (*elm.key(), elm.key().key as usize))
+                .collect(),
+            id_map: items
+                .iter()
+                .map(|elm| (elm.id().clone(), elm.key().key as usize))
+                .collect(),
+            items: items,
         }
     }
 }
